@@ -1,0 +1,24 @@
+{
+  "name": "rtsp-recorder",
+  "version": "0.0.2",
+  "description": "Record and stream RTSP",
+  "main": "RTSPRecorder.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shoom3301/IPCameraReciever.git"
+  },
+  "author": {
+    "name": "Alexandr Kazachenko",
+    "email": "shoom3301@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "ws": "^0.8.0",
+    "du": "^0.1.0",
+    "async": "^1.5.0"
+  },
+  "files": [
+    "example",
+    "README.md"
+  ]
+}
