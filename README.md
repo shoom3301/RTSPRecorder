@@ -1,7 +1,5 @@
 # RTSP-Recorder
 
-[![NPM version](http://img.shields.io/npm/v/async.svg)](https://www.npmjs.org/package/rtsp-recorder)
-
 Recording RTSP stream to video files.
 This module read `RTSP` stream with `ffmpeg` and write video from this stream to file.
 And this module can stream video to `websocket`.
