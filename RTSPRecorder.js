@@ -274,7 +274,8 @@
                         streamHeader.write(STREAM_MAGIC_BYTES);
                         streamHeader.writeUInt16BE(self.movieWidth, 4);
                         streamHeader.writeUInt16BE(self.movieHeight, 6);
-                        socket.send(streamHeader, {binary:true});
+
+                        socket.sendBinary(streamHeader);
                     }).listen(port);
                 }catch(e){
                     self.log('Cant start ws server on port '+port);
@@ -282,7 +283,7 @@
 
                 self.on('camData', function(data){
                     self.wsServer.connections.forEach(function (conn) {
-                        conn.send(data, {binary:true});
+                        conn.sendBinary(data);
                     });
                 });
 
