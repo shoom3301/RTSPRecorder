@@ -2,7 +2,7 @@
  * Created by Shoom on 02.12.15.
  */
 
-var oneCamera = false;
+var oneCamera = true;
 
 if(oneCamera){
     var Recorder = require('./../RTSPRecorder');

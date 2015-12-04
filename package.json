@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "node-rtsp-stream": "^0.0.3",
+    "ws": "^0.8.0",
     "du": "^0.1.0",
     "async": "^1.5.0"
   },
