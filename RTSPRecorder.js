@@ -180,9 +180,7 @@
                 this.writeStream = fs.createWriteStream(filename);
                 this.readStream.stdout.pipe(this.writeStream);
 
-                this.writeStream.on('finish', function(){
-                    self.recordStream();
-                });
+                this.writeStream.on('finish', this.recordStreamProxy);
 
                 setTimeout(function(){
                     self.writeStream.end();
@@ -195,6 +193,13 @@
         };
 
         /**
+         * Proxy for record stream method
+         */
+        this.recordStreamProxy = function(){
+            self.recordStream();
+        };
+
+        /**
          * Clear movies directory
          * @param cb {function} callback
          */
@@ -204,7 +209,7 @@
             function ok(){
                 if(self.writeStream){
                     self.writeStream.end();
-                    self.writeStream.removeListener('finish');
+                    self.writeStream.removeListener('finish', self.recordStreamProxy);
                 }
                 self.writeStream = null;
 
