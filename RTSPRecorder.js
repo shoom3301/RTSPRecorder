@@ -190,8 +190,10 @@
             var called = false;
 
             function ok(){
-                self.writeStream.end();
-                self.writeStream.removeListener('finish');
+                if(self.writeStream){
+                    self.writeStream.end();
+                    self.writeStream.removeListener('finish');
+                }
                 self.writeStream = null;
 
                 cb.apply(self);
