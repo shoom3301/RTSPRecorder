@@ -146,6 +146,10 @@
 
             this.readStream.stdout.on('close', function() {
                 self._readStarted = false;
+                if(self.readStream.connected){
+                    self.readStream.kill();
+                    self.readStream.disconnect();
+                }
                 self.readStream = null;
                 self.reconnect();
             });
