@@ -92,6 +92,18 @@
         var self = this;
 
         /**
+         * Logging
+         */
+        this.log = function(){
+            for(var i in arguments){
+                arguments[i] = dateString()+':: '+arguments[i].toString();
+            }
+            console.log.apply(this, arguments);
+
+            return this;
+        };
+
+        /**
          * Connect to rtsp stream with ffmpeg and start record
          */
         this.connect = function(){
@@ -120,7 +132,7 @@
                         size[0] = size[0].substr(0, size[0].length-1);
                         size = size[0].split('x');
 
-                        console.log('Movie size parsed: '+size);
+                        self.log('Movie size parsed: '+size);
 
                         self.movieWidth = parseInt(size[0], 10);
                         self.movieHeight = parseInt(size[1], 10);
@@ -144,7 +156,7 @@
          */
         this.reconnect = function(){
             if(this.maxTryReconnect > 0){
-                console.log('Try connect to '+this.url);
+                this.log('Try connect to '+this.url);
                 this.maxTryReconnect --;
                 try{
                     this.connect();
@@ -153,7 +165,7 @@
                 }
             }else{
                 this.emit('lostConnection');
-                console.log('Connection lost \r\n');
+                this.log('Connection lost \r\n');
             }
 
             return this;
@@ -176,7 +188,7 @@
                     self.writeStream.end();
                 }, this.timeLimit*1000);
 
-                console.log("Start record "+filename+"\r\n");
+                this.log("Start record "+filename+"\r\n");
             });
 
             return this;
@@ -211,7 +223,7 @@
                             });
                         });
                     }catch (err){
-                        console.log(err);
+                        self.log(err);
                     }
                 }else{
                     if(!called){
@@ -258,7 +270,7 @@
                     return self.wsServer.broadcast(data);
                 });
 
-                console.log('Websocket stream started to port: '+port);
+                self.log('Websocket stream started to port: '+port);
 
                 if(cb) cb();
             }
