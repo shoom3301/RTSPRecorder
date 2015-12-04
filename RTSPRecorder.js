@@ -109,6 +109,14 @@
          * Connect to rtsp stream with ffmpeg and start record
          */
         this.connect = function(){
+            if(this.readStream){
+                if(this.readStream.connected){
+                    this.readStream.kill();
+                    this.readStream.disconnect();
+                }
+                this.readStream = null;
+            }
+
             this.readStream = child_process.spawn("ffmpeg",
                 ["-rtsp_transport", "tcp", "-i", this.url, '-f', 'mpeg1video', '-b:v', '800k', '-r', '30', '-'],
                 {detached: false}
@@ -146,11 +154,6 @@
 
             this.readStream.stdout.on('close', function() {
                 self._readStarted = false;
-                if(self.readStream.connected){
-                    self.readStream.kill();
-                    self.readStream.disconnect();
-                }
-                self.readStream = null;
                 self.reconnect();
             });
 
