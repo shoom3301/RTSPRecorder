@@ -187,19 +187,35 @@
          * @param cb {function} callback
          */
         this.clearDir = function(cb){
+            var called = false;
+
+            function ok(){
+                self.writeStream.end();
+                self.writeStream.removeListener('finish');
+                self.writeStream = null;
+
+                cb.apply(self);
+            }
+
             du(this.folder, function (err, size) {
                 if(size/1024/1024 > self.maxDirSize){
                     try{
                         removeFolder(self.folder, function(){
                             fs.mkdir(self.folder, function(){
-                                cb.apply(self);
+                                if(!called){
+                                    ok();
+                                    called = true;
+                                }
                             });
                         });
                     }catch (err){
                         console.log(err);
                     }
                 }else{
-                    cb.apply(self);
+                    if(!called){
+                        ok();
+                        called = true;
+                    }
                 }
             });
 
