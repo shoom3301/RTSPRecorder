@@ -10,7 +10,7 @@
         child_process = require('child_process'),
         du = require('du'),
         async = require('async'),
-        ws = require('nodejs-websocket');
+        wsstream = require('node-rtsp-stream');
 
     //For websocket stream
     var STREAM_MAGIC_BYTES = 'jsmp';
@@ -268,23 +268,10 @@
          */
         this.wsStream = function(port, cb){
             function start(){
-                try{
-                    self.wsServer = ws.createServer(function (socket) {
-                        var streamHeader = new Buffer(8);
-                        streamHeader.write(STREAM_MAGIC_BYTES);
-                        streamHeader.writeUInt16BE(self.movieWidth, 4);
-                        streamHeader.writeUInt16BE(self.movieHeight, 6);
-
-                        socket.sendBinary(streamHeader);
-                    }).listen(port);
-                }catch(e){
-                    self.log('Cant start ws server on port '+port);
-                }
-
-                self.on('camData', function(data){
-                    self.wsServer.connections.forEach(function (conn) {
-                        conn.sendBinary(data);
-                    });
+                self.wsServer = new wsstream({
+                    name: self.name,
+                    streamUrl: self.url,
+                    wsPort: port
                 });
 
                 self.log('Websocket stream started to port: '+port);
