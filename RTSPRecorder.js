@@ -9,11 +9,7 @@
         events = require('events'),
         child_process = require('child_process'),
         du = require('du'),
-        async = require('async'),
-        ws = require('ws');
-
-    //For websocket stream
-    var STREAM_MAGIC_BYTES = 'jsmp';
+        async = require('async');
 
     /**
      * Date to string
@@ -259,60 +255,6 @@
             });
 
             return this;
-        };
-
-        /**
-         * Start stream video to websocket
-         * @param port {int} ws port
-         * @param cb {function} callback
-         */
-        this.wsStream = function(port, cb){
-            function start(){
-                try{
-                    self.wsServer = new ws.Server({
-                        port: port
-                    });
-                }catch(e){
-                    self.log('Cant start ws server on port '+port);
-                }
-
-                self.wsServer.on("connection", function(socket) {
-                    var streamHeader = new Buffer(8);
-                    streamHeader.write(STREAM_MAGIC_BYTES);
-                    streamHeader.writeUInt16BE(self.movieWidth, 4);
-                    streamHeader.writeUInt16BE(self.movieHeight, 6);
-                    socket.send(streamHeader, {binary:true});
-                });
-
-                self.wsServer.broadcast = function(data, opts) {
-                    var i, _results;
-                    _results = [];
-                    var clients = self.wsServer.clients;
-
-                    for (i in clients) {
-                        if (clients[i].readyState === 1) {
-                            _results.push(clients[i].send(data, opts));
-                        }
-                    }
-                    return _results;
-                };
-
-                self.on('camData', function(data){
-                    return self.wsServer.broadcast(data);
-                });
-
-                self.log('Websocket stream started to port: '+port);
-
-                if(cb) cb();
-            }
-
-            if(self.movieWidth){
-                start.apply(self);
-            }else{
-                self.once('haveMovieSize', start);
-            }
-
-            return self;
         };
 
         /**
