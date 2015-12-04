@@ -285,20 +285,13 @@
                 });
 
                 self.wsServer.broadcast = function(data, opts) {
-                    var i, _results;
-                    _results = [];
-                    var clients = self.wsServer.clients;
-
-                    for (i in clients) {
-                        if (clients[i].readyState === 1) {
-                            _results.push(clients[i].send(data, opts));
-                        }
-                    }
-                    return _results;
+                    self.wsServer.clients.forEach(function(client) {
+                        client.send(data, opts);
+                    });
                 };
 
                 self.on('camData', function(data){
-                    return self.wsServer.broadcast(data);
+                    return self.wsServer.broadcast(data, {binary:true});
                 });
 
                 self.log('Websocket stream started to port: '+port);
