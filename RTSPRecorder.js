@@ -268,9 +268,13 @@
          */
         this.wsStream = function(port, cb){
             function start(){
-                self.wsServer = new ws.Server({
-                    port: port
-                });
+                try{
+                    self.wsServer = new ws.Server({
+                        port: port
+                    });
+                }catch(e){
+                    self.log('Cant start ws server on port '+port);
+                }
 
                 self.wsServer.on("connection", function(socket) {
                     var streamHeader = new Buffer(8);
