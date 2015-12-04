@@ -10,7 +10,7 @@
         child_process = require('child_process'),
         du = require('du'),
         async = require('async'),
-        ws = require('ws');
+        ws = require('nodejs-websocket');
 
     //For websocket stream
     var STREAM_MAGIC_BYTES = 'jsmp';
@@ -269,29 +269,21 @@
         this.wsStream = function(port, cb){
             function start(){
                 try{
-                    self.wsServer = new ws.Server({
-                        port: port
-                    });
+                    self.wsServer = ws.createServer(function (socket) {
+                        var streamHeader = new Buffer(8);
+                        streamHeader.write(STREAM_MAGIC_BYTES);
+                        streamHeader.writeUInt16BE(self.movieWidth, 4);
+                        streamHeader.writeUInt16BE(self.movieHeight, 6);
+                        socket.send(streamHeader, {binary:true});
+                    }).listen(port);
                 }catch(e){
                     self.log('Cant start ws server on port '+port);
                 }
 
-                self.wsServer.on("connection", function(socket) {
-                    var streamHeader = new Buffer(8);
-                    streamHeader.write(STREAM_MAGIC_BYTES);
-                    streamHeader.writeUInt16BE(self.movieWidth, 4);
-                    streamHeader.writeUInt16BE(self.movieHeight, 6);
-                    socket.send(streamHeader, {binary:true});
-                });
-
-                self.wsServer.broadcast = function(data, opts) {
-                    self.wsServer.clients.forEach(function(client) {
-                        client.send(data, opts);
-                    });
-                };
-
                 self.on('camData', function(data){
-                    return self.wsServer.broadcast(data, {binary:true});
+                    self.wsServer.connections.forEach(function (conn) {
+                        conn.send(data, {binary:true});
+                    });
                 });
 
                 self.log('Websocket stream started to port: '+port);
