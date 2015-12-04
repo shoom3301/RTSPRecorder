@@ -62,9 +62,11 @@
     /**
      * Rtsp stream recorder and streamer
      * @param params {object} parameters
+     * @param name {string} name if recorder
      * @constructor
      */
-    var Recorder = function(params){
+    var Recorder = function(params, name){
+        this.name = name || '';
         //url to stream
         this.url = '';
         //stream for frite video to file
@@ -144,6 +146,7 @@
 
             this.readStream.stdout.on('close', function() {
                 self._readStarted = false;
+                self.readStream = null;
                 self.reconnect();
             });
 
@@ -166,9 +169,19 @@
             }else{
                 this.emit('lostConnection');
                 this.log('Connection lost \r\n');
+
+                process.exit(1);
             }
 
             return this;
+        };
+
+        /**
+         * Path to records folder
+         * @returns {string}
+         */
+        this.recordsPath = function(){
+            return this.folder+(this.name?(this.name+'/'):'');
         };
 
         /**
@@ -176,7 +189,7 @@
          */
         this.recordStream = function(){
             this.clearDir(function(){
-                var filename = this.folder+this.prefix+dateString()+'.mp4';
+                var filename = this.recordsPath()+this.prefix+dateString()+'.mp4';
                 this.writeStream = fs.createWriteStream(filename);
                 this.readStream.stdout.pipe(this.writeStream);
 
@@ -186,7 +199,7 @@
                     self.writeStream.end();
                 }, this.timeLimit*1000);
 
-                this.log("Start record "+filename+"\r\n");
+                this.log("Start record "+filename);
             });
 
             return this;
@@ -248,11 +261,11 @@
          */
         this.wsStream = function(port, cb){
             function start(){
-                this.wsServer = new ws.Server({
+                self.wsServer = new ws.Server({
                     port: port
                 });
 
-                this.wsServer.on("connection", function(socket) {
+                self.wsServer.on("connection", function(socket) {
                     var streamHeader = new Buffer(8);
                     streamHeader.write(STREAM_MAGIC_BYTES);
                     streamHeader.writeUInt16BE(self.movieWidth, 4);
@@ -260,18 +273,20 @@
                     socket.send(streamHeader, {binary:true});
                 });
 
-                this.wsServer.broadcast = function(data, opts) {
+                self.wsServer.broadcast = function(data, opts) {
                     var i, _results;
                     _results = [];
-                    for (i in this.clients) {
-                        if (this.clients[i].readyState === 1) {
-                            _results.push(this.clients[i].send(data, opts));
+                    var clients = self.wsServer.clients;
+
+                    for (i in clients) {
+                        if (clients[i].readyState === 1) {
+                            _results.push(clients[i].send(data, opts));
                         }
                     }
                     return _results;
                 };
 
-                this.on('camData', function(data){
+                self.on('camData', function(data){
                     return self.wsServer.broadcast(data);
                 });
 
@@ -280,13 +295,13 @@
                 if(cb) cb();
             }
 
-            if(this.movieWidth){
-                start.apply(this);
+            if(self.movieWidth){
+                start.apply(self);
             }else{
-                this.once('haveMovieSize', start);
+                self.once('haveMovieSize', start);
             }
 
-            return this;
+            return self;
         };
 
         /**
@@ -295,6 +310,15 @@
          * @see recordStream
          */
         this.initialize = function(){
+            //Create records directory if not exist
+            try{
+                if(!fs.lstatSync(this.recordsPath()).isDirectory()){
+                    fs.mkdirSync(this.recordsPath());
+                }
+            }catch (e){
+                fs.mkdirSync(this.recordsPath());
+            }
+
             this.on('readStart', function(){
                 self.maxTryReconnect = 5;
                 self.recordStream();

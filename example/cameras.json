@@ -1,0 +1,24 @@
+{
+    "front": {
+        "url": "rtsp://admin:admin@192.168.1.145/11",
+        "timeLimit": 60,
+        "folder": "videos/",
+        "prefix": "f",
+        "movieWidth": 1280,
+        "movieHeight": 720,
+        "maxDirSize": 20480,
+        "maxTryReconnect": 15,
+        "wsPort": 8001
+    },
+    "back": {
+        "url": "rtsp://admin:admin@192.168.1.145/11",
+        "timeLimit": 60,
+        "folder": "videos/",
+        "prefix": "b",
+        "movieWidth": 1280,
+        "movieHeight": 720,
+        "maxDirSize": 20480,
+        "maxTryReconnect": 15,
+        "wsPort": 8002
+    }
+}
