@@ -54,7 +54,7 @@
     }
 
     var protocol = 'rtsp://';
-    var urlRegex =  new RegExp(protocol+"([\w\d]+):([\w\d]+)@");
+    var urlRegex =  new RegExp(protocol+"([\\w\\d]+):([\\w\\d]+)@");
 
     /**
      * Rtsp stream recorder and streamer
