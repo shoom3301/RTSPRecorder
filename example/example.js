@@ -2,19 +2,12 @@
  * Created by Shoom on 02.12.15.
  */
 
-var Recorder = require('./../RTSPRecorder');
+var Recorder = require('../RTSPRecorder.js');
 
 var rec = new Recorder({
-    name: 'cam1',
-    url: 'rtsp://admin:admin@192.168.1.145/11',
+    url: 'rtsp://login:pass@rtsp_stream:554',
     timeLimit: 10,
-    folder: 'videos/',
-    prefix: 'vid-',
-    movieWidth: 1280,
-    movieHeight: 720,
-    maxDirSize: 1024*20,
-    maxTryReconnect: 15
-
+    name: 'cam1',
+    folder: 'videos/'
 });
-
-rec.initialize().wsStream(8001);
+rec.initialize();
