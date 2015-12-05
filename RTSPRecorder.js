@@ -80,7 +80,7 @@
 
         if(!this.username){
             var regres = urlRegex.exec(this.url);
-            this.url.replace(regres[0], '');
+            this.url = this.url.replace(regres[0], '');
             this.username = regres[1];
             this.password = regres[2];
         }
@@ -114,13 +114,6 @@
             );
         };
 
-        this.openRTSP = function(filename){
-            return child_process.spawn("openRTSP",
-                ["-u", this.username, this.password, '-f', '25', protocol+this.url],
-                {detached: false, stdio: ['ignore', fs.createWriteStream(filename), 'ignore']}
-            );
-        };
-
         /**
          * Record stream to file
          */
@@ -145,7 +138,7 @@
                 var filename = this.recordsPath()+dateString()+'.mp4';
 
                 this.writeStream = null;
-                this.writeStream = this.openRTSP(filename);
+                this.writeStream = this.ffmpeg(filename);
 
                 this.writeStream.once('exit', function(){
                     self.recordStream();
