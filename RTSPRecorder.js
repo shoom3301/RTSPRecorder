@@ -117,7 +117,7 @@
         this.openRTSP = function(filename){
             return child_process.spawn("openRTSP",
                 ["-u", this.username, this.password, '-f', '25', protocol+this.url],
-                {detached: false, stdio: ['ignore', fs.openSync(filename, 'w'), 'ignore']}
+                {detached: false, stdio: ['ignore', fs.createWriteStream(filename), 'ignore']}
             );
         };
 
