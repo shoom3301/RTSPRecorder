@@ -53,6 +53,9 @@
         })
     }
 
+    var protocol = 'rtsp://';
+    var urlRegex =  new RegExp(protocol+"([\w\d]+):([\w\d]+)@");
+
     /**
      * Rtsp stream recorder and streamer
      * @param params {object} parameters
@@ -75,6 +78,13 @@
             if(params.hasOwnProperty(v)) this[v] = params[v];
         }
 
+        if(!this.username){
+            var regres = urlRegex.exec(this.url);
+            this.url.replace(regres[0], '');
+            this.username = regres[1];
+            this.password = regres[2];
+        }
+
         var self = this;
 
         /**
@@ -95,6 +105,20 @@
          */
         this.recordsPath = function(){
             return this.folder+(this.name?(this.name+'/'):'');
+        };
+
+        this.ffmpeg = function(filename){
+            return child_process.spawn("ffmpeg",
+                ["-i", protocol+this.username+':'+this.password+'@'+this.url, '-an', '-f', 'mpeg1video', '-b:v', '128k', '-r', '25', filename],
+                {detached: false}
+            );
+        };
+
+        this.openRTSP = function(filename){
+            return child_process.spawn("openRTSP",
+                ["-u", this.username, this.password, '-f', '25', protocol+this.url],
+                {detached: false, stdio: ['ignore', fs.openSync(filename, 'w'), 'ignore']}
+            );
         };
 
         /**
@@ -121,10 +145,7 @@
                 var filename = this.recordsPath()+dateString()+'.mp4';
 
                 this.writeStream = null;
-                this.writeStream = child_process.spawn("ffmpeg",
-                    ["-i", this.url, '-an', '-f', 'mpeg1video', '-b:v', '128k', '-r', '30', filename],
-                    {detached: false}
-                );
+                this.writeStream = this.openRTSP(filename);
 
                 this.writeStream.once('exit', function(){
                     self.recordStream();
