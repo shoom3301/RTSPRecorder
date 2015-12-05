@@ -75,17 +75,15 @@
         this.maxTryReconnect = 5;
         //max size of video directory (MB), if size more than this size dir will be cleared
         this.maxDirSize = 100;
-        //width of movie clip
-        this.movieWidth = 0;
-        //height of movie clip
-        this.movieHeight = 0;
-        //limit to record one video file
+        //limit to record one video file (sec)
         this.timeLimit = 60*10;
 
         params = params || {};
         for(var v in params){
             if(params.hasOwnProperty(v)) this[v] = params[v];
         }
+
+        this._maxTryReconnect = this.maxTryReconnect+0;
 
         var self = this;
 
@@ -126,28 +124,6 @@
                 self.emit('camData', chunk);
             });
 
-            this.readStream.stderr.on('data', function(data) {
-                if(self.movieWidth) return;
-
-                data = data.toString();
-                if (data && data.indexOf('Stream #0') !== -1){
-
-                    var size = data.match(/\d+x\d+,/);
-
-                    if (size != null) {
-                        size[0] = size[0].substr(0, size[0].length-1);
-                        size = size[0].split('x');
-
-                        self.log('Movie size parsed: '+size);
-
-                        self.movieWidth = parseInt(size[0], 10);
-                        self.movieHeight = parseInt(size[1], 10);
-
-                        self.emit('haveMovieSize');
-                    }
-                }
-            });
-
             this.readStream.stdout.on('close', function() {
                 self._readStarted = false;
                 self.reconnect();
@@ -161,20 +137,22 @@
          * @see connect
          */
         this.reconnect = function(){
-            if(this.maxTryReconnect > 0){
-                this.log('Try connect to '+this.url);
-                this.maxTryReconnect --;
-                try{
-                    this.connect();
-                }catch(e){
+            setTimeout(function(){
+                if(self.maxTryReconnect > 0){
+                    self.log('Try connect to '+self.url);
+                    self.maxTryReconnect --;
+                    try{
+                        self.connect();
+                    }catch(e){
 
+                    }
+                }else{
+                    self.emit('lostConnection');
+                    self.log('Connection lost \r\n');
+
+                    process.exit(1);
                 }
-            }else{
-                this.emit('lostConnection');
-                this.log('Connection lost \r\n');
-
-                process.exit(1);
-            }
+            }, 1000);
 
             return this;
         };
@@ -273,7 +251,7 @@
             }
 
             this.on('readStart', function(){
-                self.maxTryReconnect = 5;
+                self.maxTryReconnect = self._maxTryReconnect;
                 self.recordStream();
             });
 
@@ -284,6 +262,5 @@
     };
 
     util.inherits(Recorder, events.EventEmitter);
-
     module.exports = Recorder;
 })();
